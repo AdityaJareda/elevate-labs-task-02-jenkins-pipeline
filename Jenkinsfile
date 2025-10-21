@@ -7,7 +7,7 @@ pipeline {
 	environment {
 		DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
 		DOCKERHUB_USERNAME = 'adityajareda'
-		DOCKax_IMAGE_NAME = 'nodejs-demo-app'
+		DOCKER_IMAGE_NAME = 'nodejs-demo-app'
 	}
 
 	stages {
