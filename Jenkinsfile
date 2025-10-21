@@ -51,6 +51,6 @@ pipeline {
 
 		cleanup {
 			sh "docker rmi ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
-                }
+		}
 	}
 }
