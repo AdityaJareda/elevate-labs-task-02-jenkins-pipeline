@@ -45,9 +45,5 @@ pipeline {
 			echo 'Pipeline finished. Cleaning up...'
 			sh 'docker logout'
 		}
-
-		cleanup {
-			sh "docker rmi ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
-		}
 	}
 }
