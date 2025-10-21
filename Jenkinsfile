@@ -4,7 +4,7 @@ pipeline {
 	environment {
 		DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
 		DOCKERHUB_USERNAME = 'adityajareda'
-		DOCKERHUB_IMAGE_NAME = 'nodejs-demo-app'
+		DOCKER_IMAGE_NAME = 'nodejs-demo-app'
 	}
 
 	stages {
@@ -25,7 +25,7 @@ pipeline {
 		stage('Build Docker Image') {
 			steps {
 				echo 'Building the Docker image...'
-				sh "docker build -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE_NAME}:latest ."
+				sh "docker build -t ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest ."
 			}
 		}
 
@@ -47,3 +47,4 @@ pipeline {
 		}
 	}
 }
+
