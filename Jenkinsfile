@@ -43,15 +43,16 @@ pipeline {
 			steps {
 				script {
 					def containerName = "nodejs-test-${BUILD_NUMBER}"
+					def testPort = "90${BUILD_NUMBER}"
 
-					echo "Deploying test container: ${containerName}"
-					sh "docker run --rm -d -p 8081:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
+					echo "Deploying test container: ${containerName} on port ${testPort}"
+					sh "docker run --rm -d -p ${testPort}:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
 
 					echo 'Pausing for 5 seconds to allow the application to start...'
 					sh 'sleep 5'
 
 					echo 'Testing application endpoint...'
-					sh 'curl -f http://localhost:8081'
+					sh 'curl -f http://localhost:${testPort}'
 
 					echo 'Test successful! Stopping container...'
 					sh "docker stop ${containerName}"
