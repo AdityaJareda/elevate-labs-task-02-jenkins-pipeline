@@ -45,7 +45,7 @@ pipeline {
 					def containerName = "modejs-test-${BUILD_NUMBER}"
 
 					echo "Deploying test container: ${containerName}"
-					sh "docker run --rm -d -p 8080:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
+					sh "docker run --rm -d -p 8081:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
 
 					echo 'Pausing for 5 seconds to allow the application to start...'
 					sh 'sleep 5'
