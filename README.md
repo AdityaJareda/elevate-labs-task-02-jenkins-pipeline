@@ -47,68 +47,95 @@ The `Jenkinsfile` defines a multi-stage pipeline that executes automatically on 
 This is the code that defines the entire automation process:
 
 ```groovy
+// This is the main wrapper for my entire Declarative Pipeline.
 pipeline {
+    // I'm telling Jenkins it can run this on any available machine (or "agent").
     agent any
 
+    // Here, I set up some global variables to reuse throughout the pipeline.
     environment {
+        // This ID points to the secret username/password I stored safely in Jenkins.
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
+        // My Docker Hub username, so I don't have to hardcode it everywhere.
         DOCKERHUB_USERNAME     = 'adityajareda'
+        // The name for the Docker image we're going to build.
         DOCKERHUB_IMAGE_NAME   = 'nodejs-demo-app'
     }
 
+    // This is where I define the actual stages of my CI/CD pipeline.
     stages {
+
+        // First, I'll install dependencies and run tests to make sure the code is solid.
         stage('Install Dependencies & Test') {
             steps {
                 echo 'Installing ALL dependencies for testing...'
-                sh 'npm ci' 
+                // Using '--production-only' tells npm to ignore devDependencies like testing frameworks.
+                sh 'npm ci --production-only' 
                 
                 echo 'Running tests...'
+                // This runs the test script from package.json. If it fails, the pipeline stops here.
                 sh 'npm test'
             }
         }
 
+        // Once the tests pass, it's time to package the application into a Docker image.
         stage('Build Docker Image') {
             steps {
                 echo 'Building the Docker image...'
+                // I'm building the image using my Dockerfile and tagging it with my username.
                 sh "docker build -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE_NAME}:latest ."
             }
         }
 
+        // Now I'll publish the image to Docker Hub so it can be used anywhere.
         stage('Push to Docker Hub') {
             steps {
                 echo 'Pushing image to Docker Hub...'
+                // This is the secure way to handle my password. Jenkins injects it safely.
                 withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    // Logging into Docker Hub without my password ever appearing in the logs.
                     sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                    // Pushing the image up to the Docker Hub registry.
                     sh "docker push ${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE_NAME}:latest"
                 }
             }
         }
 
+        // A quick "smoke test" to prove the image I just pushed actually works.
         stage('Deploy and Test') {
             steps {
+                // I need a 'script' block here to define some variables.
                 script {
+                    // Creating a unique container name so my builds don't ever clash.
                     def containerName = "nodejs-test-${BUILD_NUMBER}"
+                    // Creating a unique port so I can run multiple pipelines at once.
                     def testPort = "909${BUILD_NUMBER % 100}"
 
                     echo "Deploying test container: ${containerName} on port ${testPort}"
+                    // Starting the container. The '--rm' flag is great for automatic cleanup.
                     sh "docker run --rm -d -p ${testPort}:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE_NAME}:latest"
 
-                    echo 'Pausing for 5 seconds to allow the application to start...'
+                    echo 'Giving the app a few seconds to start up...'
                     sh 'sleep 5'
 
-                    echo 'Testing application endpoint...'
+                    echo 'Testing the application endpoint...'
+                    // Using 'curl -f' is a robust way to check if the server is healthy.
                     sh "curl -f http://localhost:${testPort}"
 
-                    echo 'Test successful! Stopping container...'
+                    echo 'Test successful! Stopping the container now...'
+                    // Stopping the container triggers the --rm flag to remove it.
                     sh "docker stop ${containerName}"
                 }
             }
         }
     }
 
+    // This 'post' section runs after all the stages are finished.
     post {
+        // I want this to run 'always', whether the pipeline passed or failed.
         always {
             echo 'Pipeline finished. Cleaning up...'
+            // Good practice to always log out at the end.
             sh 'docker logout'
         }
     }
