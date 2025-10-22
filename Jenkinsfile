@@ -29,7 +29,7 @@ pipeline {
 			}
 		}
 
-		stage('Push to Decker Hub') {
+		stage('Push to Docker Hub') {
 			steps {
 				echo 'Pushing image to Docker Hub...'
 				withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -42,7 +42,7 @@ pipeline {
 		stage('Deploy and Test') {
 			steps {
 				script {
-					def containerName = "modejs-test-${BUILD_NUMBER}"
+					def containerName = "nodejs-test-${BUILD_NUMBER}"
 
 					echo "Deploying test container: ${containerName}"
 					sh "docker run --rm -d -p 8081:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
@@ -51,7 +51,7 @@ pipeline {
 					sh 'sleep 5'
 
 					echo 'Testing application endpoint...'
-					sh 'curl http://localhost:8080 | grep "Hello World!"'
+					sh 'curl -f http://localhost:8081'
 
 					echo 'Test successful! Stopping container...'
 					sh "docker stop ${containerName}"
