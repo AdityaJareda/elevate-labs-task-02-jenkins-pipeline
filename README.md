@@ -6,6 +6,18 @@ The entire pipeline is defined as code using a `Jenkinsfile`, which is version-c
 
 ---
 
+## Project Architecture and Setup
+
+This project was built using a local development environment that mirrors a typical self-hosted setup.
+
+*   **Jenkins Server:** Jenkins was installed and configured on an **Ubuntu 24.04 Server VM** running in VMware on a Windows 11 host. This provides an isolated, Linux-based environment for our automation server. All pipeline jobs were executed directly on this Jenkins server.
+
+*   **Local Development:** All code, including the `Jenkinsfile`, was written in the CLI on the Ubuntu VM. The project repository was managed with Git from this same environment.
+
+*   **GitHub to Jenkins Webhook:** To allow the public GitHub servers to communicate with the private Jenkins server running on the local VM, a secure tunnel was created using **ngrok**. `ngrok` generated a temporary public URL that was configured as a webhook in the GitHub repository. This webhook securely forwards `git push` events from GitHub to the Jenkins instance, enabling immediate, automated pipeline triggers.
+
+---
+
 ## The CI/CD Pipeline Stages
 
 The `Jenkinsfile` defines a multi-stage pipeline that executes automatically on every push to the `main` branch.
