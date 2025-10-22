@@ -41,19 +41,21 @@ pipeline {
 
 		stage('Deploy and Test') {
 			steps {
-				def containerName = "modejs-test-${BUILD_NUMBER}"
+				script {
+					def containerName = "modejs-test-${BUILD_NUMBER}"
 
-				echo "Deploying test container: ${containerName}"
-				sh "docker run --rm -d -p 8080:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
+					echo "Deploying test container: ${containerName}"
+					sh "docker run --rm -d -p 8080:8080 --name ${containerName} ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE_NAME}:latest"
 
-				echo 'Pausing for 5 seconds to allow the application to start...'
-				sh 'sleep 5'
+					echo 'Pausing for 5 seconds to allow the application to start...'
+					sh 'sleep 5'
 
-				echo 'Testing application endpoint...'
-				sh 'curl http://localhost:8080 | grep "Hello World!"'
+					echo 'Testing application endpoint...'
+					sh 'curl http://localhost:8080 | grep "Hello World!"'
 
-				echo 'Test successful! Stopping container...'
-				sh "docker stop ${containerName}"
+					echo 'Test successful! Stopping container...'
+					sh "docker stop ${containerName}"
+				}
 			}
 		}
 				
