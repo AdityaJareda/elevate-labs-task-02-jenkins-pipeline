@@ -52,7 +52,7 @@ pipeline {
 					sh 'sleep 5'
 
 					echo 'Testing application endpoint...'
-					sh 'curl -f http://localhost:${testPort}'
+					sh "curl -f http://localhost:${testPort} || exit 1"
 
 					echo 'Test successful! Stopping container...'
 					sh "docker stop ${containerName}"
